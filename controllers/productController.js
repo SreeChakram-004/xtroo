@@ -2,8 +2,12 @@ const { Product } = require('../models');
 const { Op } = require('sequelize');
 
 const getAllProducts = async (req, res) => {
-  const shopId = req.user.Shop.dataValues.id; // Access the shop ID from req.user
-  const { search = '', page = 1, limit, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
+  const shopId = req.user?.Shop?.dataValues?.id;
+  let { search = '', page, limit, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
+
+  // Set default values for page and limit if they are not provided in req.query
+  page = page || 1;
+  limit = limit || 10;
 
   try {
     const whereClause = { shopId };
@@ -16,7 +20,7 @@ const getAllProducts = async (req, res) => {
     let totalPages = 1;
     let offset = 0;
     if (limit) {
-      limit = parseInt(limit);
+      limit = parseInt(limit); // Parsing limit to an integer
       totalPages = Math.ceil(totalCount / limit);
       offset = (page - 1) * limit;
     }
@@ -41,12 +45,15 @@ const getAllProducts = async (req, res) => {
   }
 };
 
+
+
+
 const createProduct = async (req, res) => {
     const shopId = req.user.Shop.dataValues.id; // Access the shop ID from req.user
     const { productName } = req.body;
     try {
       const product = await Product.create({ productName, shopId });
-      res.status(201).json({ status: true, productName: product.productName,shopId : product.shopId });
+      res.status(201).json({ status: true,id:product.id,uuid:product.uuid, productName: product.productName,shopId : product.shopId });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ status: false, message: 'An error occurred while creating the product.' });
